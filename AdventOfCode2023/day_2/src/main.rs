@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::collections::HashMap;
 
 fn main() -> io::Result<()> {
     let path = Path::new("values.txt");
@@ -17,15 +16,8 @@ fn main() -> io::Result<()> {
         }
     }
 
-    let mut total_power = 0;
-    for (game_id, attempts) in &games {
-        let min_cubes = find_minimum_cubes(&attempts);
-        let power = min_cubes.values().product::<i32>();
-        total_power += power;
-        println!("Game {}: Minimum cubes required - {:?}, Power - {}", game_id, min_cubes, power);
-    }
-
-    println!("Total power of all games: {}", total_power);
+    let result = calculate_possible_games_sum(&games);
+    println!("Sum of possible game IDs: {}", result);
 
     Ok(())
 }
@@ -56,13 +48,21 @@ fn parse_game_data(line: &str) -> Option<(i32, Vec<(String, i32)>)> {
     Some((game_id, attempts.concat()))
 }
 
-fn find_minimum_cubes(attempts: &Vec<(String, i32)>) -> HashMap<String, i32> {
-    let mut min_cubes = HashMap::new();
+fn calculate_possible_games_sum(games: &Vec<(i32, Vec<(String, i32)>)>) -> i32 {
+    let max_cubes = [("red".to_string(), 12), ("green".to_string(), 13), ("blue".to_string(), 14)]
+        .iter().cloned().collect::<std::collections::HashMap<_, _>>();
 
-    for (color, number) in attempts {
-        let entry = min_cubes.entry(color.clone()).or_insert(0);
-        *entry = std::cmp::max(*entry, *number);
-    }
+    games.iter()
+        .filter(|&(_, attempts)| {
+            let mut counts = std::collections::HashMap::new();
+            for (color, number) in attempts {
+                let count = counts.entry(color.clone()).or_insert(0);
+                *count = std::cmp::max(*count, *number);
+            }
 
-    min_cubes
+            counts.iter().all(|(color, &count)| max_cubes.get(color).map_or(false, |&max| count <= max))
+        })
+        .map(|(id, _)| id)
+        .sum()
 }
+
