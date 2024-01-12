@@ -6,4 +6,6 @@ I am not going for leaderboards for my first year, so I will post solutions as s
 ## About
 If you are unfamiliar with Advent of Code, please take a look at this FAQ on the official website: [Advent of Code FAQ](https://adventofcode.com/2023/about) 
 
+I am closing this one out and archiving.
+
 
